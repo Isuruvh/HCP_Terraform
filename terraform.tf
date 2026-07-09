@@ -1,8 +1,4 @@
 terraform {
-  cloud {
-    organisation="IsurutraderST"
-    workspace="HCP_Terraform"
-  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
