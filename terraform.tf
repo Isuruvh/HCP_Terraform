@@ -2,6 +2,16 @@
 # SPDX-License-Identifier: MPL-2.0
 
 terraform {
+  
+  cloud {
+    organization ="IsurutraderST"
+
+    workspaces {
+      name = "HCP_Terraform"
+    }
+  }
+
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
