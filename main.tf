@@ -1,21 +1,11 @@
-data "terraform_remote_state" "network" {
-  backend = "remote"
-
-  config = {
-    organization = "IsurutraderST"
-    workspaces = {
-          name = "HCP_Terraform"
-    }
-  }
-}
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
 
 provider "aws" {
-  region = "us-west-2"
+  region = var.region
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-}
+provider "random" {}
 
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -25,32 +15,35 @@ data "aws_ami" "ubuntu" {
     values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
   }
 
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
   owners = ["099720109477"] # Canonical
 }
 
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.19.0"
-
-  name = "learn-hcp-terraform"
-  cidr = "10.0.0.0/16"
-
-  azs             = data.aws_availability_zones.available.names
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-  public_subnets  = ["10.0.101.0/24"]
-
-  enable_dns_hostnames = true
+resource "random_pet" "instance" {
+  length = 2
 }
 
+module "ec2-instance" {
+  source = "./modules/aws-ec2-instance"
 
-resource "aws_instance" "app_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
+  ami_id        = data.aws_ami.ubuntu.id
+  instance_name = random_pet.instance.id
+  instance_type = "t3.micro" 
+  
+}
 
-  vpc_security_group_ids = [module.vpc.default_security_group_id]
-  subnet_id              = module.vpc.private_subnets[0]
+module "hello" {
+  source  = "joatmon08/hello/random"
+  version = "6.0.0"
 
-  tags = {
-    Name = var.instance_name
+  hellos = {
+    hello        = random_pet.instance.id
+    second_hello = "World"
   }
+
+  some_key = var.secret_key
 }
