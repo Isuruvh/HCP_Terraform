@@ -27,14 +27,7 @@ resource "random_pet" "instance" {
   length = 2
 }
 
-module "ec2-instance" {
-  source = "./modules/aws-ec2-instance"
 
-  ami_id        = data.aws_ami.ubuntu.id
-  instance_name = random_pet.instance.id
-  instance_type = "t3.micro" 
-  
-}
 
 module "hello" {
   source  = "joatmon08/hello/random"
@@ -45,5 +38,5 @@ module "hello" {
     second_hello = "World"
   }
 
-  some_key = var.secret_key
+  some_key = "secret"
 }
